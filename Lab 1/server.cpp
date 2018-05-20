@@ -87,40 +87,39 @@ std::string makePuzzle(sha* psh, std::string secret, int pNum, int k){
 }
 
 bool checkSol(std::string s, sha* psh, std::string secret){
-  // int i;
-  // std::ostringstream puzzleBase;
-  // std::string x, pTime, pNum, puzzleStr;
-  // char hash[20];
-  // Big h;
-  // printf("Got potential solution\n");
-  // i = s.find(";");
-  // x = s.substr(0, i);
-  // s.erase(0, i + 1);
-  //
-  // i = s.find(";");
-  // pTime = s.substr(0, i);
-  // s.erase(0, i + 1);
-  //
-  // pNum = s;
-  //
-  // puzzleBase << pTime << x << "hello" << pNum;
-  //
-  // puzzleStr = puzzleBase.str();
-  // for(int i = 0; i < puzzleStr.length(); i++){
-  //   shs_process(psh, puzzleStr[i]);
-  // }
-  // shs_hash(psh, hash);
-  // h = from_binary(20, hash);
-  // puzzleBase.str("");
-  // puzzleBase << h;
-  //
-  // return (puzzleBase.str() == s);
-  return true;
+  int i;
+  std::ostringstream puzzleBase;
+  std::string x, pTime, pNum, puzzleStr;
+  char hash[20];
+  Big h;
+  printf("Got potential solution\n");
+  i = s.find(";");
+  x = s.substr(0, i);
+  s.erase(0, i + 1);
+
+  i = s.find(";");
+  pTime = s.substr(0, i);
+  s.erase(0, i + 1);
+
+  pNum = s;
+
+  puzzleBase << pTime << secret << "hello" << pNum;
+
+  puzzleStr = puzzleBase.str();
+  for(int i = 0; i < puzzleStr.length(); i++){
+    shs_process(psh, puzzleStr[i]);
+  }
+  shs_hash(psh, hash);
+  h = from_binary(20, hash);
+  puzzleBase.str("");
+  puzzleBase << h;
+
+  return (puzzleBase.str() == x.substr(0, puzzleBase.str().length()));
 }
 
 int main(){
   int pNum = 1;
-  int k = 15;
+  int k = 3;
   time_t seed;
   sha sh;
   std::string puzzleStr;
@@ -143,7 +142,9 @@ int main(){
     if(zmqReq == "hello"){
       printf("Received request\n");
       puzzleStr = makePuzzle(&sh, secret, pNum, k);
-      pNum++;
+
+      printf("Sending puzzle\n");
+
       zmq::message_t reply(puzzleStr.length());
       memcpy(reply.data (), puzzleStr.c_str(), puzzleStr.length());
       socket.send (reply);
@@ -155,6 +156,7 @@ int main(){
       socket.send(reply);
     }
     else{
+      printf("Received incorrect puzzle solution\n");
       zmq::message_t reply(2);
       memcpy(reply.data (), "no", 2);
       socket.send(reply);
