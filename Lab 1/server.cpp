@@ -15,6 +15,7 @@
 #include <sstream>
 #include <bitset>
 #include "miracl.h"
+#include <cstdlib>
 #ifndef _WIN32
   #include <unistd.h>
 #else
@@ -117,7 +118,7 @@ bool checkSol(std::string s, sha* psh, std::string secret){
   return (puzzleBase.str() == x.substr(0, puzzleBase.str().length()));
 }
 
-int main(){
+int main(int argc, char** argv){
   int pNum = 1;
   int k = 3;
   time_t seed;
@@ -126,6 +127,10 @@ int main(){
   std::ostringstream puzzleInput;
   std::string zmqReq;
   std::string secret = "81725cc80a71d6be7f63ab851d69d874";
+
+  if(argc > 1){
+    k = atoi(argv[1]);
+  }
 
   zmq::context_t context (1);
   zmq::socket_t socket (context, ZMQ_REP);
